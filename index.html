@@ -1,50 +1,80 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>現在地を表示</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2em;
-    }
-    #map {
-      margin-top: 1em;
-      width: 100%;
-      max-width: 600px;
-      height: 400px;
-      border: 1px solid #ccc;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>現在地を表示</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            padding: 2em;
+        }
+        #map {
+            margin-top: 1em;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            border: 1px solid #ccc;
+        }
+        /* ボタンのスタイルを少し調整 */
+        button {
+            padding: 0.8em 1.5em;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <h1>あなたの現在地</h1>
-  <button onclick="getLocation()">位置情報を取得</button>
-  <p id="output">まだ位置情報は取得されていません。</p>
-  <iframe id="map" src="" frameborder="0" allowfullscreen></iframe>
+    <h1>あなたの現在地</h1>
+    <button onclick="getLocation()">位置情報を取得</button>
+    <p id="output">まだ位置情報は取得されていません。</p>
+    <iframe id="map" src="" frameborder="0" allowfullscreen></iframe>
 
-  <script>
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-      } else {
-        document.getElementById("output").innerText = "このブラウザは位置情報取得に対応していません。";
-      }
-    }
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                // 位置情報取得のオプションを追加
+                const options = {
+                    enableHighAccuracy: true, // 高精度を要求
+                    timeout: 10000,           // 10秒でタイムアウト
+                    maximumAge: 0             // キャッシュを使用しない
+                };
+                navigator.geolocation.getCurrentPosition(showPosition, showError, options);
+            } else {
+                document.getElementById("output").innerText = "このブラウザは位置情報取得に対応していません。";
+            }
+        }
 
-    function showPosition(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-      document.getElementById("output").innerText = `緯度: ${lat}, 経度: ${lon}`;
+        function showPosition(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            document.getElementById("output").innerText = `緯度: ${lat.toFixed(6)}, 経度: ${lon.toFixed(6)}`; // 小数点以下を整形
 
-      const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lon-0.01},${lat-0.01},${lon+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lon}`;
-      document.getElementById("map").src = mapUrl;
-    }
+            // OpenStreetMapの埋め込みURLを生成
+            const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lon-0.01},${lat-0.01},${lon+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lon}`;
+            document.getElementById("map").src = mapUrl;
+        }
 
-    function showError(error) {
-      document.getElementById("output").innerText = "位置情報の取得に失敗しました。";
-    }
-  </script>
+        // showError関数を詳細化して、原因を分かりやすく表示
+        function showError(error) {
+            let message = "";
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = "位置情報の利用が許可されませんでした。ブラウザや端末の設定を確認してください。";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = "現在位置が取得できませんでした。電波の良い場所で再度お試しください。";
+                    break;
+                case error.TIMEOUT:
+                    message = "位置情報の取得がタイムアウトしました。";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    message = "原因不明のエラーが発生しました。";
+                    break;
+            }
+            document.getElementById("output").innerText = message;
+        }
+    </script>
 </body>
 </html>
