@@ -1,11 +1,50 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8">
-    <title>タイトル</title>
-  </head>
-  <body>
-    <strong>テストの-3乗</strong>
-    <h2>中日ドラゴンズの情報</h2>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <title>現在地を表示</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+    #map {
+      margin-top: 1em;
+      width: 100%;
+      max-width: 600px;
+      height: 400px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
+<body>
+  <h1>あなたの現在地</h1>
+  <button onclick="getLocation()">位置情報を取得</button>
+  <p id="output">まだ位置情報は取得されていません。</p>
+  <iframe id="map" src="" frameborder="0" allowfullscreen></iframe>
+
+  <script>
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        document.getElementById("output").innerText = "このブラウザは位置情報取得に対応していません。";
+      }
+    }
+
+    function showPosition(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      document.getElementById("output").innerText = `緯度: ${lat}, 経度: ${lon}`;
+
+      const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lon-0.01},${lat-0.01},${lon+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lon}`;
+      document.getElementById("map").src = mapUrl;
+    }
+
+    function showError(error) {
+      document.getElementById("output").innerText = "位置情報の取得に失敗しました。";
+    }
+  </script>
+</body>
+</html>
